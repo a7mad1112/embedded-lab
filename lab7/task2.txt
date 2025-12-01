@@ -1,0 +1,51 @@
+
+
+#include <xc.h>
+#include <pic18f4550.h> 
+
+#pragma config PBADEN	= OFF 
+#pragma config FOSC 	= HS
+#pragma config PWRT 	= OFF
+#pragma config BOR 		= OFF
+#pragma config ICPRT 	= OFF
+#pragma config LVP 		= OFF
+#pragma config WDT 		= OFF
+#pragma config DEBUG	= OFF
+#pragma config CPUDIV	= OSC1_PLL2	
+
+
+#define _XTAL_FREQ 8000000  
+
+void my_delay_us(unsigned int u) {
+    int hund = u / 100;
+    int rem = u % 100;
+    for(int i = 0; i<hund; i++) 
+        __delay_us(100);
+    
+    for(int i = 0; i<rem; i++) 
+        __delay_us(1); 
+}
+
+void main(void)
+{
+    
+    TRISB = 0;
+    PORTB = 0X01;
+    my_delay_us(1000);
+    
+    PORTB = 0X0;
+    __delay_ms(1000);
+    PORTB = 0X01;
+    my_delay_us(2000);
+    
+    
+    PORTB = 0X0;
+    __delay_ms(3000);
+    
+    PORTB = 0X01;
+    my_delay_us(1000);
+    PORTB = 0X0;
+    while (1);
+    return;
+}
+
