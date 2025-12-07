@@ -1,0 +1,38 @@
+
+
+#include <xc.h>
+#include <pic18f4550.h> 
+
+#pragma config PBADEN	= OFF 
+#pragma config FOSC 	= HS
+#pragma config PWRT 	= OFF
+#pragma config BOR 		= OFF
+#pragma config ICPRT 	= OFF
+#pragma config LVP 		= OFF
+#pragma config WDT 		= OFF
+#pragma config DEBUG	= OFF
+#pragma config CPUDIV	= OSC1_PLL2	
+
+
+#define _XTAL_FREQ 8000000  
+
+
+void main(void)
+{
+
+    TRISD = 0;
+    TRISAbits.TRISA1 = 1;
+    ADCON0 = 5;
+    ADCON1 = 0XCE;
+    while (1)
+    {
+        __delay_ms(1);
+        ADCON0bits.GO = 1;
+        while(ADCON0bits.DONE == 1);
+        PORTD = ADRESH;
+        __delay_ms(250);
+       
+    }
+    return;
+}
+

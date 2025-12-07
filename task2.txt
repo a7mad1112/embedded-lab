@@ -1,0 +1,113 @@
+
+
+#include <xc.h>
+#include <pic18f4550.h> 
+
+#pragma config PBADEN	= OFF 
+#pragma config FOSC 	= HS
+#pragma config PWRT 	= OFF
+#pragma config BOR 		= OFF
+#pragma config ICPRT 	= OFF
+#pragma config LVP 		= OFF
+#pragma config WDT 		= OFF
+#pragma config DEBUG	= OFF
+#pragma config CPUDIV	= OSC1_PLL2	
+
+
+#define _XTAL_FREQ 8000000  
+
+
+
+void send_data(unsigned char c) {
+  TRISB = 0x00;
+  PORTB = 0x00;
+
+  PORTBbits.RB4 = 1; 
+  PORTBbits.RB5 = 0;
+
+  PORTB = PORTB | (c >> 4);
+
+  PORTBbits.RB5 = 1;
+  __delay_us(40);
+
+  PORTBbits.RB5 = 0;
+
+  PORTB = PORTB & 0xF0;    
+  PORTB = PORTB | c & 0x0F; 
+
+  PORTBbits.RB5 = 1;
+  __delay_us(40);
+
+  PORTBbits.RB5 = 0;
+  __delay_us(100);
+}
+
+void send_command(unsigned char c) {
+  TRISB = 0x00;
+  PORTB = 0x00;
+
+  PORTBbits.RB4 = 0;
+  PORTBbits.RB5 = 0;
+
+  PORTB = PORTB | (c >> 4);
+
+  PORTBbits.RB5 = 1;
+  __delay_us(40);
+
+  PORTBbits.RB5 = 0;
+  PORTB = PORTB & 0xF0;
+  PORTB = PORTB | c & 0x0F;
+
+  PORTBbits.RB5 = 1;
+  __delay_us(40);
+
+  PORTBbits.RB5 = 0;
+  __delay_us(400);
+}
+void initialize_lcd() {
+  send_command(0x30);
+  send_command(0x20);
+  send_command(0x28);
+  send_command(0x01);
+  send_command(0x06);
+  send_command(0x0C);
+}
+
+void display_lcd(unsigned int dout) {
+    int d0 = dout % 10;
+    dout = dout / 10;
+    int d1 = dout % 10;
+    dout = dout / 10;
+    int d2 = dout % 10;
+    dout = dout / 10;
+    int d3 = dout % 10;
+    TRISB = 0;
+    initialize_lcd();
+    send_command(01);
+    send_data(d3 + 0x30);
+    send_data(d2 + 0x30);
+    send_data(d1 + 0x30);
+    send_data(d0 + 0x30);
+}
+
+void main(void)
+{
+    TRISB = 0;
+    TRISD = 0;
+    TRISAbits.TRISA1 = 1;
+    ADCON0 = 5;
+    ADCON1 = 8;
+    ADCON2 = 0X84;
+    while (1)
+    {
+        __delay_ms(1);
+        ADCON0bits.GO = 1;
+        while(ADCON0bits.DONE == 1);
+        unsigned int dout = ADRESL + ADRESH * 256;
+        display_lcd(dout);
+        __delay_ms(250);
+       
+    }
+    return;
+}
+
